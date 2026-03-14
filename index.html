@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11. Sınıf YKS Görev Takipçisi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        /* GÜN SEKMELERİ İÇİN TASARIM */
+        .day-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .day-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .day-btn:hover {
+            background-color: #bdc3c7;
+        }
+        .day-btn.active {
+            background-color: #e67e22; /* Seçili günün rengi turuncu */
+            color: white;
+            box-shadow: 0 4px 6px rgba(230, 126, 34, 0.3);
+        }
+
+        .date-display {
+            text-align: center;
+            font-size: 1.2em;
+            color: #e67e22;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .progress-container {
+            margin: 20px 0;
+            background-color: #e0e0e0;
+            border-radius: 25px;
+            width: 100%;
+            height: 25px;
+        }
+        .progress-bar {
+            background-color: #27ae60;
+            height: 100%;
+            border-radius: 25px;
+            width: 0%;
+            transition: width 0.4s ease;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            line-height: 25px;
+        }
+        .task-item {
+            background: #eaf2f8; 
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #3498db; 
+            transition: all 0.3s ease;
+        }
+        .task-header {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .task-header input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            margin-top: 15px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        .completed-task {
+            border-left-color: #27ae60;
+            background: #ecf0f1;
+            opacity: 0.8;
+        }
+        .completed-task span {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 11. Sınıf YKS Kampı</h1>
+    
+    <div class="day-tabs" id="dayTabs"></div>
+
+    <div class="date-display" id="dateDisplay"></div>
+    
+    <h2>Seçili Günün İlerlemesi</h2>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+    </div>
+
+    <hr>
+
+    <div id="tasksContainer">
+        </div>
+</div>
+
+<script>
+    // 1. HAFTALIK PROGRAM VERİTABANI (Görevleri buradan düzenleyebilirsin)
+    const varsayilanProgram = {
+        "Pazartesi": [
+            { id: 1, title: "11. Sınıf Matematik: Trigonometri 1. Bölüm", type: "video", videoId: "3FVl6eky7-Y", completed: false },
+            { id: 2, title: "Paragraf: 20 Soru Çözümü", type: "task", videoId: null, completed: false }
+        ],
+        "Salı": [
+            { id: 1, title: "Fizik: Newton'un Hareket Yasaları", type: "video", videoId: "3FVl6eky7-Y", completed: false },
+            { id: 2, title: "TYT Problem: 20 Soru Çözümü", type: "task", videoId: null, completed: false }
+        ],
+        "Çarşamba": [
+            { id: 1, title: "Kimya: Gazlar Konu Tekrarı", type: "task", videoId: null, completed: false }
+        ],
+        "Perşembe": [
+            { id: 1, title: "Türkçe: Paragraf Taktikleri", type: "video", videoId: "oPcfo2wM-Fc", completed: false }
+        ],
+        "Cuma": [],
+        "Cumartesi": [
+            { id: 1, title: "Haftalık Konu Tekrarı (Sözel Dersler)", type: "task", videoId: null, completed: false }
+        ],
+        "Pazar": [
+            { id: 1, title: "Deneme Sınavı (TYT Genel)", type: "task", videoId: null, completed: false }
+        ]
+    };
+
+    // 2. VERİLERİ ÇEK VEYA OLUŞTUR
+    let haftalikProgram = JSON.parse(localStorage.getItem('yks11Program'));
+    if (!haftalikProgram) {
+        haftalikProgram = varsayilanProgram;
+    }
+
+    // 3. GÜN VE SEKME YÖNETİMİ
+    const gunlerPazartesidenBaslar = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+    
+    // JS'de Pazar=0, Pazartesi=1'dir. Bizim gün ismini doğru çekmemiz lazım:
+    const jsGunler = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+    const bugunTarih = new Date();
+    const gercekBugun = jsGunler[bugunTarih.getDay()];
+    
+    let seciliGun = gercekBugun; // Başlangıçta bugünü seç
+
+    // Sekmeleri (Butonları) Ekrana Çizme Fonksiyonu
+    function renderTabs() {
+        const tabsContainer = document.getElementById('dayTabs');
+        tabsContainer.innerHTML = ''; // Önceki sekmeleri temizle
+
+        gunlerPazartesidenBaslar.forEach(gun => {
+            const btn = document.createElement('button');
+            btn.className = `day-btn ${gun === seciliGun ? 'active' : ''}`;
+            btn.innerText = gun;
+            btn.onclick = () => {
+                seciliGun = gun; // Tıklanan günü seçili gün yap
+                renderTabs();    // Butonların renklerini güncelle (Aktif olanı turuncu yap)
+                renderTasks();   // Seçilen günün görevlerini ekrana getir
+            };
+            tabsContainer.appendChild(btn);
+        });
+
+        // Başlık yazısını güncelle
+        document.getElementById('dateDisplay').innerText = `Seçilen Program: ${seciliGun}`;
+    }
+
+    // 4. GÖREVLERİ OLUŞTURMA (Seçili Güne Göre)
+    const tasksContainer = document.getElementById('tasksContainer');
+
+    function renderTasks() {
+        tasksContainer.innerHTML = ''; 
+        const seciliGorevler = haftalikProgram[seciliGun] || [];
+
+        if (seciliGorevler.length === 0) {
+            tasksContainer.innerHTML = '<h3>Bu gün için atanmış bir görev yok. Kitap okuyabilir veya dinlenebilirsin! 📚</h3>';
+            updateProgress(seciliGorevler);
+            return;
+        }
+
+        seciliGorevler.forEach((gorev, index) => {
+            const isCompleted = gorev.completed;
+            let taskClass = isCompleted ? 'task-item completed-task' : 'task-item';
+
+            let taskHTML = `
+                <div class="${taskClass}" id="task-${index}">
+                    <div class="task-header">
+                        <input type="checkbox" ${isCompleted ? 'checked' : ''} 
+                               onchange="toggleTask(${index})">
+                        <span>${gorev.title}</span>
+                    </div>
+            `;
+
+            if (gorev.type === 'video' && gorev.videoId) {
+                taskHTML += `
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/${gorev.videoId}?rel=0" 
+                                frameborder="0" allow="autoplay; encrypted-media" 
+                                referrerpolicy="strict-origin-when-cross-origin" 
+                                allowfullscreen></iframe>
+                    </div>
+                `;
+            }
+
+            taskHTML += `</div>`;
+            tasksContainer.innerHTML += taskHTML;
+        });
+
+        updateProgress(seciliGorevler);
+    }
+
+    // 5. TİK ATILDIĞINDA ÇALIŞACAK FONKSİYON
+    window.toggleTask = function(index) {
+        haftalikProgram[seciliGun][index].completed = !haftalikProgram[seciliGun][index].completed;
+        localStorage.setItem('yks11Program', JSON.stringify(haftalikProgram));
+        renderTasks();
+    };
+
+    // 6. İLERLEME ÇUBUĞUNU GÜNCELLEME
+    function updateProgress(seciliGorevler) {
+        const progressBar = document.getElementById('progressBar');
+        
+        if (seciliGorevler.length === 0) {
+            progressBar.style.width = '100%';
+            progressBar.innerText = '100%';
+            return;
+        }
+
+        let completed = seciliGorevler.filter(g => g.completed).length;
+        let percentage = Math.round((completed / seciliGorevler.length) * 100);
+        
+        progressBar.style.width = percentage + '%';
+        progressBar.innerText = percentage + '%';
+    }
+
+    // Uygulamayı Başlat
+    renderTabs();
+    renderTasks();
+
+</script>
+
+</body>
+</html>
