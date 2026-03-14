@@ -25,7 +25,7 @@
             text-align: center;
         }
         
-        /* GÜN SEKMELERİ İÇİN TASARIM */
+        /* GÜN SEKMELERİ */
         .day-tabs {
             display: flex;
             flex-wrap: wrap;
@@ -47,7 +47,7 @@
             background-color: #bdc3c7;
         }
         .day-btn.active {
-            background-color: #e67e22; /* Seçili günün rengi turuncu */
+            background-color: #e67e22;
             color: white;
             box-shadow: 0 4px 6px rgba(230, 126, 34, 0.3);
         }
@@ -127,7 +127,6 @@
     <h1>🚀 11. Sınıf YKS Kampı</h1>
     
     <div class="day-tabs" id="dayTabs"></div>
-
     <div class="date-display" id="dateDisplay"></div>
     
     <h2>Seçili Günün İlerlemesi</h2>
@@ -137,74 +136,86 @@
 
     <hr>
 
-    <div id="tasksContainer">
-        </div>
+    <div id="tasksContainer"></div>
 </div>
 
 <script>
-    // 1. HAFTALIK PROGRAM VERİTABANI (Görevleri buradan düzenleyebilirsin)
+    // YouTube Playlist ID'leri
+    const CografyaPL = "PL5kIOunpmSBMRUcDAel0Q7UC2cW3pD5Zm";
+    const FizikPL = "PLjMK0Mww73Cc4v8HI329cVSd7U4cMAEVZ";
+    const KimyaPL = "PL5kIOunpmSBNBWMQWLo0vjOZcNx5I_L7p";
+    const BiyolojiPL = "PL87vBAl7SzvzqiYcuIxz7ptFykyE2qYS_";
+
+    // HAFTALIK PROGRAM
+    // "index" değeri oynatma listesindeki sırayı belirtir. (0 = 1. video, 1 = 2. video, 2 = 3. video vb.)
     const varsayilanProgram = {
         "Pazartesi": [
-            { id: 1, title: "11. Sınıf Matematik: Trigonometri 1. Bölüm", type: "video", videoId: "3FVl6eky7-Y", completed: false },
-            { id: 2, title: "Paragraf: 20 Soru Çözümü", type: "task", videoId: null, completed: false }
+            { id: 1, title: "Coğrafya: 1. Video", type: "playlist", playlistId: CografyaPL, index: 0, completed: false },
+            { id: 2, title: "TYT Fizik: 1. Video", type: "playlist", playlistId: FizikPL, index: 0, completed: false },
+            { id: 3, title: "Paragraf: 40 Soru Çözümü", type: "task", completed: false }
         ],
         "Salı": [
-            { id: 1, title: "Fizik: Newton'un Hareket Yasaları", type: "video", videoId: "3FVl6eky7-Y", completed: false },
-            { id: 2, title: "TYT Problem: 20 Soru Çözümü", type: "task", videoId: null, completed: false }
+            { id: 1, title: "Coğrafya: 2. Video", type: "playlist", playlistId: CografyaPL, index: 1, completed: false },
+            { id: 2, title: "TYT Fizik: 2. Video", type: "playlist", playlistId: FizikPL, index: 1, completed: false },
+            { id: 3, title: "Paragraf: 40 Soru Çözümü", type: "task", completed: false }
         ],
         "Çarşamba": [
-            { id: 1, title: "Kimya: Gazlar Konu Tekrarı", type: "task", videoId: null, completed: false }
+            { id: 1, title: "TYT Kimya: 1. Video", type: "playlist", playlistId: KimyaPL, index: 0, completed: false },
+            { id: 2, title: "TYT Biyoloji: 1. Video", type: "playlist", playlistId: BiyolojiPL, index: 0, completed: false },
+            { id: 3, title: "TYT Matematik: 40 Problem Çözümü", type: "task", completed: false }
         ],
         "Perşembe": [
-            { id: 1, title: "Türkçe: Paragraf Taktikleri", type: "video", videoId: "oPcfo2wM-Fc", completed: false }
+            { id: 1, title: "TYT Kimya: 2. Video", type: "playlist", playlistId: KimyaPL, index: 1, completed: false },
+            { id: 2, title: "TYT Biyoloji: 2. Video", type: "playlist", playlistId: BiyolojiPL, index: 1, completed: false },
+            { id: 3, title: "TYT Matematik: 40 Problem Çözümü", type: "task", completed: false }
         ],
-        "Cuma": [],
+        "Cuma": [
+            { id: 1, title: "Coğrafya: 3. Video", type: "playlist", playlistId: CografyaPL, index: 2, completed: false },
+            { id: 2, title: "TYT Fizik: 3. Video", type: "playlist", playlistId: FizikPL, index: 2, completed: false },
+            { id: 3, title: "Paragraf: 40 Soru Çözümü", type: "task", completed: false }
+        ],
         "Cumartesi": [
-            { id: 1, title: "Haftalık Konu Tekrarı (Sözel Dersler)", type: "task", videoId: null, completed: false }
+            { id: 1, title: "TYT Kimya: 3. Video", type: "playlist", playlistId: KimyaPL, index: 2, completed: false },
+            { id: 2, title: "TYT Biyoloji: 3. Video", type: "playlist", playlistId: BiyolojiPL, index: 2, completed: false },
+            { id: 3, title: "TYT Matematik: 40 Problem Çözümü", type: "task", completed: false }
         ],
         "Pazar": [
-            { id: 1, title: "Deneme Sınavı (TYT Genel)", type: "task", videoId: null, completed: false }
+            { id: 1, title: "Haftanın Genel Tekrarı ve Serbest Zaman", type: "task", completed: false }
         ]
     };
 
-    // 2. VERİLERİ ÇEK VEYA OLUŞTUR
-    let haftalikProgram = JSON.parse(localStorage.getItem('yks11Program'));
+    // Yeni versiyon numarası ile çakışmaları önledik
+    let haftalikProgram = JSON.parse(localStorage.getItem('yks11Program_v2'));
     if (!haftalikProgram) {
         haftalikProgram = varsayilanProgram;
     }
 
-    // 3. GÜN VE SEKME YÖNETİMİ
     const gunlerPazartesidenBaslar = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
-    
-    // JS'de Pazar=0, Pazartesi=1'dir. Bizim gün ismini doğru çekmemiz lazım:
     const jsGunler = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
     const bugunTarih = new Date();
     const gercekBugun = jsGunler[bugunTarih.getDay()];
     
-    let seciliGun = gercekBugun; // Başlangıçta bugünü seç
+    let seciliGun = gercekBugun; 
 
-    // Sekmeleri (Butonları) Ekrana Çizme Fonksiyonu
     function renderTabs() {
         const tabsContainer = document.getElementById('dayTabs');
-        tabsContainer.innerHTML = ''; // Önceki sekmeleri temizle
+        tabsContainer.innerHTML = ''; 
 
         gunlerPazartesidenBaslar.forEach(gun => {
             const btn = document.createElement('button');
             btn.className = `day-btn ${gun === seciliGun ? 'active' : ''}`;
             btn.innerText = gun;
             btn.onclick = () => {
-                seciliGun = gun; // Tıklanan günü seçili gün yap
-                renderTabs();    // Butonların renklerini güncelle (Aktif olanı turuncu yap)
-                renderTasks();   // Seçilen günün görevlerini ekrana getir
+                seciliGun = gun; 
+                renderTabs();    
+                renderTasks();   
             };
             tabsContainer.appendChild(btn);
         });
 
-        // Başlık yazısını güncelle
         document.getElementById('dateDisplay').innerText = `Seçilen Program: ${seciliGun}`;
     }
 
-    // 4. GÖREVLERİ OLUŞTURMA (Seçili Güne Göre)
     const tasksContainer = document.getElementById('tasksContainer');
 
     function renderTasks() {
@@ -212,28 +223,29 @@
         const seciliGorevler = haftalikProgram[seciliGun] || [];
 
         if (seciliGorevler.length === 0) {
-            tasksContainer.innerHTML = '<h3>Bu gün için atanmış bir görev yok. Kitap okuyabilir veya dinlenebilirsin! 📚</h3>';
+            tasksContainer.innerHTML = '<h3>Bu gün için atanmış bir görev yok. Dinlenebilirsin! ☕</h3>';
             updateProgress(seciliGorevler);
             return;
         }
 
-        seciliGorevler.forEach((gorev, index) => {
+        seciliGorevler.forEach((gorev, currentIndex) => {
             const isCompleted = gorev.completed;
             let taskClass = isCompleted ? 'task-item completed-task' : 'task-item';
 
             let taskHTML = `
-                <div class="${taskClass}" id="task-${index}">
+                <div class="${taskClass}" id="task-${currentIndex}">
                     <div class="task-header">
                         <input type="checkbox" ${isCompleted ? 'checked' : ''} 
-                               onchange="toggleTask(${index})">
+                               onchange="toggleTask(${currentIndex})">
                         <span>${gorev.title}</span>
                     </div>
             `;
 
-            if (gorev.type === 'video' && gorev.videoId) {
+            // Eğer görev bir oynatma listesiyse iframe oluştur
+            if (gorev.type === 'playlist' && gorev.playlistId) {
                 taskHTML += `
                     <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/${gorev.videoId}?rel=0" 
+                        <iframe src="https://www.youtube.com/embed/videoseries?list=${gorev.playlistId}&index=${gorev.index}&rel=0" 
                                 frameborder="0" allow="autoplay; encrypted-media" 
                                 referrerpolicy="strict-origin-when-cross-origin" 
                                 allowfullscreen></iframe>
@@ -248,14 +260,12 @@
         updateProgress(seciliGorevler);
     }
 
-    // 5. TİK ATILDIĞINDA ÇALIŞACAK FONKSİYON
     window.toggleTask = function(index) {
         haftalikProgram[seciliGun][index].completed = !haftalikProgram[seciliGun][index].completed;
-        localStorage.setItem('yks11Program', JSON.stringify(haftalikProgram));
+        localStorage.setItem('yks11Program_v2', JSON.stringify(haftalikProgram));
         renderTasks();
     };
 
-    // 6. İLERLEME ÇUBUĞUNU GÜNCELLEME
     function updateProgress(seciliGorevler) {
         const progressBar = document.getElementById('progressBar');
         
@@ -272,7 +282,6 @@
         progressBar.innerText = percentage + '%';
     }
 
-    // Uygulamayı Başlat
     renderTabs();
     renderTasks();
 
